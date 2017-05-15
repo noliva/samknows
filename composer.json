@@ -1,0 +1,14 @@
+{
+    "name": "natanael/sam-knows",
+    "require": {
+        "php": "^7",
+        "symfony/console": "^3.2"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Natanael Oliva",
+            "email": "natanael.og@gmail.com"
+        }
+    ]
+}
