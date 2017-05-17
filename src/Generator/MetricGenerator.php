@@ -28,7 +28,7 @@ class MetricGenerator
                     yield [
                         'unit_id' => $unitId,
                         'metric' => $metric,
-                        'value' => $data['value'],
+                        'value' => is_int($data['value'])? $data['value'] : ($data['value'] * 100),
                         'date' => $data['timestamp'],
                     ];
                 }
