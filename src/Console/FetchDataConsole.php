@@ -6,7 +6,9 @@ use App\Generator\MetricGenerator;
 use App\Processor\MetricProcessor;
 use GuzzleHttp\Client;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class FetchDataConsole extends Command
@@ -17,6 +19,13 @@ class FetchDataConsole extends Command
     protected function configure()
     {
         $this->setName('app:import');
+
+        $this->addArgument('url', InputArgument::REQUIRED, 'url');
+
+        $this->addOption('host', null, InputOption::VALUE_OPTIONAL, 'host', '127.0.0.1');
+        $this->addOption('dbname', null, InputOption::VALUE_OPTIONAL, 'dbname', 'samknows');
+        $this->addOption('user', null, InputOption::VALUE_OPTIONAL, 'user', 'root');
+        $this->addOption('password', null, InputOption::VALUE_OPTIONAL, 'password', 'root');
     }
 
     /**
@@ -24,16 +33,27 @@ class FetchDataConsole extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->setUp();
+        $url = $input->getArgument('url');
+        $host = $input->getOption('host');
+        $dbName = $input->getOption('dbname');
+        $user = $input->getOption('user');
+        $password = $input->getOption('password');
+
+        $conn = $this->getConnection($host, $dbName, $user, $password);
+        $this->setUp($conn);
 
         $client = new Client();
-        $response = $client->get('http://tech-test.sandbox.samknows.com/php-2.0/testdata.json');
+        $response = $client->get($url);
         $report = $this->decode($response->getBody());
 
         $output->writeln('Processing file');
-        $metricProcessor = new MetricProcessor($this->getConnection());
-        $metricGenerator = new MetricGenerator($report);
-        $metricProcessor->process($metricGenerator);
+        try {
+            $metricProcessor = new MetricProcessor($conn);
+            $metricGenerator = new MetricGenerator($report);
+            $metricProcessor->process($metricGenerator);
+        } catch (\PDOException $e) {
+            throw new \Exception(sprintf('Error processing data, reason: %s', $e->getMessage()));
+        }
         $output->writeln('Finished processing');
     }
 
@@ -53,12 +73,16 @@ class FetchDataConsole extends Command
     }
 
     /**
+     * @param $host
+     * @param $dbName
+     * @param $user
+     * @param $password
      * @return \PDO
      * @throws \Exception
      */
-    private function getConnection() {
+    private function getConnection($host, $dbName, $user, $password) {
         try {
-            $conn = new \PDO('mysql:host=127.0.0.1;dbname=samknows', 'root', 'root');
+            $conn = new \PDO(sprintf('mysql:host=%s;dbname=%s', $host, $dbName), $user, $password);
         } catch (\PDOException $e) {
             throw new \Exception(sprintf('Error connecting to database, reason: %s', $e->getMessage()));
         }
@@ -66,22 +90,20 @@ class FetchDataConsole extends Command
         return $conn;
     }
 
-    private function setUp() {
-        $conn = $this->getConnection();
-
+    private function setUp(\PDO $conn) {
         $conn->exec(
-          'CREATE TABLE IF NOT EXISTS metrics (
-                id INT NOT NULL AUTO_INCREMENT,
-                unit_id INT NOT NULL,
-                metric VARCHAR(255),
-                minimum INT NOT NULL,
-                maximum INT NOT NULL,
-                mean INT NOT NULL,
-                median INT NOT NULL,
-                sample_size INT NOT NULL,
-                `date` TIMESTAMP NOT NULL,
-                PRIMARY KEY (id)
-            );'
+            'CREATE TABLE IF NOT EXISTS metrics (
+                  id INT NOT NULL AUTO_INCREMENT,
+                  unit_id INT NOT NULL,
+                  metric VARCHAR(255),
+                  minimum INT NOT NULL,
+                  maximum INT NOT NULL,
+                  mean INT NOT NULL,
+                  median INT NOT NULL,
+                  sample_size INT NOT NULL,
+                  `date` TIMESTAMP NOT NULL,
+                  PRIMARY KEY (id)
+              );'
         );
     }
 }
