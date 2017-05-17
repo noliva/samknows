@@ -2,17 +2,17 @@
 
 namespace App\Fetcher;
 
-use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
 
 interface Fetcher
 {
     /**
-     * @param Client $client
+     * @param ClientInterface $client
      * @param $url
      *
      * @return Array | []
      *
      * @throws \Exception
      */
-    public function fetchFromUrl(Client $client, $url);
+    public function fetchFromUrl(ClientInterface $client, $url);
 }

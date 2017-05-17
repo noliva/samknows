@@ -2,16 +2,16 @@
 
 namespace App\Fetcher;
 
-use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
 
 class JsonFetcher implements Fetcher
 {
     /**
      * @inheritdoc
      */
-    public function fetchFromUrl(Client $client, $url)
+    public function fetchFromUrl(ClientInterface $client, $url)
     {
-        $response = $client->get($url);
+        $response = $client->request('GET', $url);
 
         if ($response->getStatusCode() !== 200) {
             throw new \Exception('Error fetching data');

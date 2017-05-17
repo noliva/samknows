@@ -34,7 +34,7 @@ class MetricGeneratorTest extends TestCase
                     'packet_loss' => [
                         [
                             'timestamp' => '2017-02-10 17:00:00',
-                            'value'     => 4670170
+                            'value'     => 46701.70
                         ]
                     ]
                 ]
