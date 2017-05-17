@@ -10,10 +10,12 @@ I have decided to use a temporary mysql table and do all the heavy operations fr
 
 Also for time, I haven't been able to calculate the median.
 
-_Things I would improve from my test._
+_**Things I would improve from my test.**_
 
-If I had a bit more time, I would have created a functional Test for the service.
+* If I had a bit more time, I would have created a functional Test for the service.
+* Also I would have refactored the Fetcher to be constructed with a type (Json, XML, etc..) and a locator (http, file, etc ..)
+* I would have extracted the queries to not know which db implementation is being used, and passed it to the service too.
 
-Also I would have refactored the Fetcher to be constructed with a type (Json, XML, etc..) and a locator (http, file, etc ..)
+_**Others**_
 
 It would have been nice to get a acceptance criteria on the task, so I could create a test to make sure the acceptance criteria is met.
